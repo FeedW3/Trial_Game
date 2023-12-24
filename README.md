@@ -1,10 +1,10 @@
 <Mettre ici le nom de votre jeu>
 ===========
 
-Développé par <prénom1 nom1> <prénom2 nom2>
+Développé par <prénom1 Lamour Enzo> <prénom2 Zhang Dylan>
 Contacts : <mail1> , <mail2>
 
-# Présentation de <le nom de votre jeu>
+# Présentation de <le Trivial Game>
 
 <Description de votre jeu>
 Des captures d'écran illustrant le fonctionnement du logiciel sont proposées dans le répertoire shots.

@@ -1,4 +1,4 @@
 class Joueur {
      String nomPlayer;
-     int score;
+     String score;
 }
