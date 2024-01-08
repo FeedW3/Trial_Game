@@ -1,1 +1,1 @@
-enum Case{ JOUEUR, QUESTIONS }
+enum Case{ JOUEUR, QUESTIONS, FIN }
