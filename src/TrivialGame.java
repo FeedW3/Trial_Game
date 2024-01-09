@@ -20,6 +20,7 @@ class TrivialGame extends Program {
     boolean laReponse = false;
     Question [] tableauQuestions;
     int nbTour = 0;
+    boolean jeuFini = false;
 
     //récupere le fichier Plateau.csv dans ressources puis le renvoie sous forme de chaine de caractére
     String initialiserPlateau(String chemin){
@@ -146,20 +147,41 @@ class TrivialGame extends Program {
         Case caseTP;
         int [] idxJoueur = idxJoueur(cases);
         int [] caseSuivante = idxQuestion(cases,idxJoueur);
+        int idx;
         for(int i = 0; i < lancer; i++){
             idxJoueur = idxJoueur(cases);
             caseSuivante = idxQuestion(cases, idxJoueur);
             caseTP = cases[idxJoueur[0]][idxJoueur[1]];
+            if(idxJoueur[0] == 4 && idxJoueur[1] < 7){
+                if(cases[idxJoueur[0]][idxJoueur[1]+1] == Case.FIN){
+                    jeuFini = true;
+                    i = lancer;
+                }
+            }else if(idxJoueur[0] == 4 && idxJoueur[1] > 7){
+                if(cases[idxJoueur[0]][idxJoueur[1]-1] == Case.FIN){
+                    jeuFini = true;
+                    i = lancer;
+                }
+            }
+            if(cases[idxJoueur[0]][idxJoueur[1]+1] == Case.FIN){
+                jeuFini = true;
+                i = lancer;
+            }
             cases[idxJoueur[0]][idxJoueur[1]] = cases[caseSuivante[0]][caseSuivante[1]];
             cases[caseSuivante[0]][caseSuivante[1]] = caseTP;
+            if(jeuFini){
+                cases[idxJoueur[0]][idxJoueur[1]] = Case.QUESTIONS;
+            }
             afficherPlateau(tab, cases);
             println();
             delay(800);
         }
-        initialiserQuestion(NOMBRE_QUESTION, tableauQuestions);
-        if(!laReponse){
+        if(!jeuFini){
+            initialiserQuestion(NOMBRE_QUESTION, tableauQuestions);
+        }
+        if(!laReponse && !jeuFini){
             println("Mauvaise réponse"); 
-        }else{
+        }else if(laReponse && !jeuFini){
             println("Bonne réponse");
         }
         delay(3000);
@@ -171,7 +193,7 @@ class TrivialGame extends Program {
         if(idxJoueur[0] == 0){
             if(idxJoueur[1]+1 == 15){
                 idx[0] = idxJoueur[0]+1;
-                idx[1] = idxJoueur[1]; 
+                idx[1] = idxJoueur[1];
             }else{
                 idx[0] = idxJoueur[0];
                 idx[1] = idxJoueur[1]+1;
@@ -183,16 +205,23 @@ class TrivialGame extends Program {
             }else{
                 idx[0] = idxJoueur[0];
                 idx[1] = idxJoueur[1]-1;
-            }            
-        }else if(idxJoueur[1] == 0){
-            idx[0] = idxJoueur[0]-1;
-            idx[1] = idxJoueur[1];
-        }else if(idxJoueur[1]+1 == 15){
-            idx[0] = idxJoueur[0]+1;
-            idx[1] = idxJoueur[1];
-        }else if(idxJoueur[0]+1 == length(cases,1)/2 && fini() && idxJoueur[1] == 0){
-            idx[0] = idxJoueur[0];
-            idx[1] = idxJoueur[1]+1;
+            }    
+        }else if(idxJoueur[1] == 0 || idxJoueur[1] >  0 && idxJoueur[1] < 7 && idxJoueur[0] == 4){
+            if(idxJoueur[0] == 4 && fini() && idxJoueur[1] < 7){
+                idx[0] = idxJoueur[0];
+                idx[1] = idxJoueur[1]+1;
+            }else{
+                idx[0] = idxJoueur[0]-1;
+                idx[1] = idxJoueur[1]; 
+            }
+        }else if(idxJoueur[1]+1 == 15 || idxJoueur[1] > 7 && idxJoueur[1] < 14 && idxJoueur[0] == 4){
+            if(idxJoueur[0] == 4 && fini()){
+                idx[0] = idxJoueur[0];
+                idx[1] = idxJoueur[1]-1; 
+            }else{
+                idx[0] = idxJoueur[0]+1;
+                idx[1] = idxJoueur[1];
+            }
         }
         return idx;
     }
@@ -307,6 +336,7 @@ class TrivialGame extends Program {
         }
     }
 
+    //Permet d'avoir une couleur pour chaque théme
     String questionsTheme(String theme){
         if(equals(theme,"Histoire")){
             return "\u001B[31m";
@@ -334,7 +364,8 @@ class TrivialGame extends Program {
     //Sauvegarde le nom, score et le chrono dans un csv 
     void saveJoueur(String scoreStr, Joueur joueur, double chrono, String chemin){
         CSVFile data = loadCSV(chemin,',');
-        String [][] tabuleur = new String [rowCount(data)+1][3];
+        int nbligne = rowCount(data);
+        String [][] tabuleur = new String [nbligne+1][3];
         String record;
         if(rowCount(data)>0){
             for(int i=0;i<=rowCount(data)-1;i++){
@@ -343,8 +374,8 @@ class TrivialGame extends Program {
                 }
             }
         }
-        tabuleur [rowCount(data)][0] = joueur.nomPlayer + ":\n";
-        tabuleur [rowCount(data)][1] = "score Histoire "+scoreHistoire + "\n" + "score Géographie " + scoreGeographie +"\n" + "score Science " + scoreScience +"\n" + "score Animaux " + scoreAnnimaux +"\n" + "score Francais " + scoreFrançais +"\n" + "score Culture G " + scoreCultureG +"\n" + "score Anglais " + scoreAnglais+"\n"+ "score Jeux Vidéo " + scoreJeuxVideo +"\n"+ "score Nourriture " + scoreNourriture +"\n";
+        tabuleur [rowCount(data)][0] = joueur.nomPlayer + ":";
+        tabuleur [rowCount(data)][1] = " score Histoire "+scoreHistoire + " " + "score Géographie " + scoreGeographie +" " + "score Science " + scoreScience +" " + "score Animaux " + scoreAnnimaux +" " + "score Francais " + scoreFrançais +" " + "score Culture G " + scoreCultureG +" " + "score Anglais " + scoreAnglais+" "+ "score Jeux Vidéo " + scoreJeuxVideo +" "+ "score Nourriture " + scoreNourriture +" ";
         tabuleur [rowCount(data)][2] = "Chrono : "+chrono;
         saveCSV(tabuleur,"./ressources/joueurs.csv");
     }
@@ -359,7 +390,7 @@ class TrivialGame extends Program {
         saveJoueur(scoreStr, joueur, chrono,"./ressources/joueurs.csv");
     }
 
-    //choisie une question au hasard
+    //Choisie une question au hasard
     int hasard(int nombreQuestion) {
         return (int) (random() * nombreQuestion);
     }
@@ -370,7 +401,7 @@ class TrivialGame extends Program {
         return charAt(mot,0) >= '0' && charAt(mot,0) <= '9';
     }
     
-    //si == 10 le jeu prend fin
+    //Si le joueur à en moins 1 point de chaque catégorie le joueur peu accéder à la sortie
     boolean fini(){
         return scoreAnglais >= 1 && scoreAnnimaux >= 1 && scoreCultureG >= 1 && scoreFrançais >= 1 && scoreGeographie >= 1 && scoreHistoire >= 1
                 && scoreJeuxVideo >= 1 && scoreNourriture >= 1 && scoreScience >= 1;
@@ -389,7 +420,7 @@ class TrivialGame extends Program {
         print("D'abord, quel est ton nom ?\t");
         joueur.nomPlayer = readString();
         long debutTime = getTime();
-        while (!fini()) {
+        while (!jeuFini) {
             clearScreen();
             menuTrivial("./ressources/Trivial.csv");
             afficherPlateau(tab, p.cases);
