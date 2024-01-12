@@ -21,6 +21,7 @@ class TrivialGame extends Program {
     Question [] tableauQuestions;
     int nbTour = 0;
     boolean jeuFini = false;
+    boolean taperFin = false;
 
     //récupere le fichier Plateau.csv dans ressources puis le renvoie sous forme de chaine de caractére
     String initialiserPlateau(String chemin){
@@ -129,62 +130,64 @@ class TrivialGame extends Program {
     void deplacement(Case [][] cases, String [][] tab){
         String tp = "";
         boolean lancerb = false;
-        while(!lancerb){
-            println("Appuyer sur entrée pour lancer le dés ou score pour voire votre score");
+        while(!lancerb && !taperFin){
+            println("Appuyer sur entrée pour lancer le dés ou écrivez score pour voire votre score");
+            println("Ecrivez fin pour finir la partie");
             tp = readString();
             if(equals(tp,"score")){
                 println("Votre score : \nscore Histoire "+scoreHistoire + "\n" + "score Géographie " + scoreGeographie +"\n" + "score Science " + scoreScience +"\n" + "score Animaux " + scoreAnnimaux +"\n" + "score Francais " + scoreFrançais +"\n" + "score Culture G " + scoreCultureG +"\n" + "score Anglais " + scoreAnglais+"\n"+ "score Jeux Vidéo " + scoreJeuxVideo +"\n"+ "score Nourriture " + scoreNourriture);
+            }else if(equals(tp,"fin")){
+                taperFin = true;
             }else if(equals(tp,"")){
                 lancerb = true;
-            }
-        }
-        if(equals(tp,"score")){
-            println("Votre score : \nscore Histoire "+scoreHistoire + "\n" + "score Géographie " + scoreGeographie +"\n" + "score Science " + scoreScience +"\n" + "score Animaux " + scoreAnnimaux +"\n" + "score Francais " + scoreFrançais +"\n" + "score Culture G " + scoreCultureG +"\n" + "score Anglais " + scoreAnglais+"\n"+ "score Jeux Vidéo " + scoreJeuxVideo +"\n"+ "score Nourriture " + scoreNourriture);
-        }
-        int lancer = des(6);
-        println("Vous avez fait "+lancer +" !");
-        delay(2000);
-        Case caseTP;
-        int [] idxJoueur = idxJoueur(cases);
-        int [] caseSuivante = idxQuestion(cases,idxJoueur);
-        int idx;
-        for(int i = 0; i < lancer; i++){
-            idxJoueur = idxJoueur(cases);
-            caseSuivante = idxQuestion(cases, idxJoueur);
-            caseTP = cases[idxJoueur[0]][idxJoueur[1]];
-            if(idxJoueur[0] == 4 && idxJoueur[1] < 7){
-                if(cases[idxJoueur[0]][idxJoueur[1]+1] == Case.FIN){
-                    jeuFini = true;
-                    i = lancer;
+                int lancer = des(6);
+                println("Vous avez fait "+lancer +" !");
+                delay(2000);
+                Case caseTP;
+                int [] idxJoueur = idxJoueur(cases);
+                int [] caseSuivante = idxQuestion(cases,idxJoueur);
+                int idx;
+                for(int i = 0; i < lancer; i++){
+                    idxJoueur = idxJoueur(cases);
+                    caseSuivante = idxQuestion(cases, idxJoueur);
+                    caseTP = cases[idxJoueur[0]][idxJoueur[1]];
+                    if(idxJoueur[0] == 4 && idxJoueur[1] < 7){
+                        if(cases[idxJoueur[0]][idxJoueur[1]+1] == Case.FIN){
+                            jeuFini = true;
+                            i = lancer;
+                        }
+                    }else if(idxJoueur[0] == 4 && idxJoueur[1] > 7){
+                        if(cases[idxJoueur[0]][idxJoueur[1]-1] == Case.FIN){
+                            jeuFini = true;
+                            i = lancer;
+                        }
+                    }
+                    if(cases[idxJoueur[0]][idxJoueur[1]+1] == Case.FIN){
+                        jeuFini = true;
+                        i = lancer;
+                    }
+                    cases[idxJoueur[0]][idxJoueur[1]] = cases[caseSuivante[0]][caseSuivante[1]];
+                    cases[caseSuivante[0]][caseSuivante[1]] = caseTP;
+                    if(jeuFini){
+                        cases[idxJoueur[0]][idxJoueur[1]] = Case.QUESTIONS;
+                    }
+                    afficherPlateau(tab, cases);
+                    println();
+                    delay(800);
                 }
-            }else if(idxJoueur[0] == 4 && idxJoueur[1] > 7){
-                if(cases[idxJoueur[0]][idxJoueur[1]-1] == Case.FIN){
-                    jeuFini = true;
-                    i = lancer;
+                if(!jeuFini){
+                    initialiserQuestion(NOMBRE_QUESTION, tableauQuestions);
                 }
+                if(!laReponse && !jeuFini){
+                    println("Mauvaise réponse"); 
+                }else if(laReponse && !jeuFini){
+                    println("Bonne réponse");
+                }
+                delay(3000);
+            }else{
+                println("Veuillez rentrer une réponse valide");
             }
-            if(cases[idxJoueur[0]][idxJoueur[1]+1] == Case.FIN){
-                jeuFini = true;
-                i = lancer;
-            }
-            cases[idxJoueur[0]][idxJoueur[1]] = cases[caseSuivante[0]][caseSuivante[1]];
-            cases[caseSuivante[0]][caseSuivante[1]] = caseTP;
-            if(jeuFini){
-                cases[idxJoueur[0]][idxJoueur[1]] = Case.QUESTIONS;
-            }
-            afficherPlateau(tab, cases);
-            println();
-            delay(800);
         }
-        if(!jeuFini){
-            initialiserQuestion(NOMBRE_QUESTION, tableauQuestions);
-        }
-        if(!laReponse && !jeuFini){
-            println("Mauvaise réponse"); 
-        }else if(laReponse && !jeuFini){
-            println("Bonne réponse");
-        }
-        delay(3000);
     }
 
     //Déplace la case Joueur dans le plateau
@@ -282,7 +285,7 @@ class TrivialGame extends Program {
 
     //Génére une question pour permettre au Joueur de répondre
     void initialiserQuestion(int nombreQuestions, Question [] questions){
-        String white = "\u001B[37m";
+        String reset = "\u001B[0m";
         String saisie;
         String reponse="";
         int idx = hasard(NOMBRE_QUESTION);
@@ -290,7 +293,7 @@ class TrivialGame extends Program {
         while(questions[idx].repondu){
             idx = hasard(NOMBRE_QUESTION);
         }
-        print(questionsTheme(questions[idx].theme)+"Question : " + questions[idx].theme + questions[idx].text + white + "\n");
+        print(questionsTheme(questions[idx].theme)+"Question : " + questions[idx].theme + questions[idx].text + reset + "\n");
         for(int j = 0; j < R-1; j++){
             print("   "+(j+1)+" : "+questions[idx].reponses[j] + "\n");
         }
@@ -351,9 +354,9 @@ class TrivialGame extends Program {
         }else if(equals(theme,"Culture G")){
             return "\u001B[35m";
         }else if(equals(theme,"Anglais")){
-            return "";
+            return "\u001B[1m";
         }else if(equals(theme,"Jeux Vidéo")){
-            return "";
+            return "\u001B[4m";
         }else if(equals(theme,"Nourriture")){
             return "";
         }else{
@@ -420,7 +423,7 @@ class TrivialGame extends Program {
         print("D'abord, quel est ton nom ?\t");
         joueur.nomPlayer = readString();
         long debutTime = getTime();
-        while (!jeuFini) {
+        while (!jeuFini && !taperFin) {
             clearScreen();
             menuTrivial("./ressources/Trivial.csv");
             afficherPlateau(tab, p.cases);
@@ -447,8 +450,52 @@ class TrivialGame extends Program {
     void testToStringCase(){
         Case caseJoueur = Case.JOUEUR;
         Case caseQuestion = Case.QUESTIONS;
-        assertEquals("J",toString(caseJoueur));
+        Case fin = Case.FIN;
+        assertEquals("\u001B[31m"+"J"+"\u001B[37m",toString(caseJoueur));
         assertEquals("?",toString(caseQuestion));
-        assertNotEquals("J",toString(caseQuestion));
+        assertNotEquals("\u001B[31m"+"J"+"\u001B[37m",toString(caseQuestion));
+        assertEquals("S",toString(fin));
+    }
+
+    void testFini(){
+        scoreAnglais++;
+        scoreAnnimaux++;
+        scoreCultureG++;
+        scoreFrançais++;
+        scoreGeographie++;
+        scoreHistoire++;
+        scoreJeuxVideo++;
+        scoreNourriture++;
+        scoreScience++;
+        assertTrue(fini());
+        scoreAnglais = scoreAnglais-1;
+        assertFalse(fini());
+    }
+
+
+    void testChargerQuestion(){
+        assertEquals(length(chargerQuestion("./ressources/Question.csv")),NOMBRE_QUESTION);
+    }
+
+    void testEstCaractNum(){
+        String mot;
+        mot="";
+        assertFalse(estCaractNum(mot));
+        mot="mot";
+        assertFalse(estCaractNum(mot));
+        mot="125";
+        assertTrue(estCaractNum(mot));
+        mot="é'(-_ç)àçè-é&é&";
+        assertFalse(estCaractNum(mot));
+        mot="1";
+        assertTrue(estCaractNum(mot));
+    }
+
+    void testQuestionTheme(){
+        String theme1 = "Histoire";
+        String red = "\u001B[31m";
+        String yellow = "\u001B[33m";
+        assertEquals(red,questionsTheme(theme1));
+        assertNotEquals(yellow,questionsTheme(theme1));
     }
 }
