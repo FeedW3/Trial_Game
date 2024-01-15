@@ -131,8 +131,8 @@ class TrivialGame extends Program {
         String tp = "";
         boolean lancerb = false;
         while(!lancerb && !taperFin){
-            println("Appuyer sur entrée pour lancer le dés ou écrivez score pour voire votre score");
-            println("Ecrivez fin pour finir la partie");
+            println("Appuyer sur entré pour lancer le dé ou écrivez score pour voir votre score");
+            println("Écrivez fin pour finir la partie");
             tp = readString();
             if(equals(tp,"score")){
                 println("Votre score : \nscore Histoire "+scoreHistoire + "\n" + "score Géographie " + scoreGeographie +"\n" + "score Science " + scoreScience +"\n" + "score Animaux " + scoreAnnimaux +"\n" + "score Francais " + scoreFrançais +"\n" + "score Culture G " + scoreCultureG +"\n" + "score Anglais " + scoreAnglais+"\n"+ "score Jeux Vidéo " + scoreJeuxVideo +"\n"+ "score Nourriture " + scoreNourriture);
@@ -401,7 +401,7 @@ class TrivialGame extends Program {
     //Fonction qui détecte si le caractére est numérique
     boolean estCaractNum(String mot){
         if (equals(mot, "")) return false;
-        return charAt(mot,0) >= '0' && charAt(mot,0) <= '9';
+        return charAt(mot,0) >= '0' && charAt(mot,0) <= '4';
     }
     
     //Si le joueur à en moins 1 point de chaque catégorie le joueur peu accéder à la sortie
